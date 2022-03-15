@@ -18,32 +18,18 @@ declare abstract class AbstractBPSJ {
     protected readonly P: Point;
     protected T: bigint[];
     constructor(P: Point);
-    protected abstract setup(b: 0 | 1): void;
-    protected abstract ladd(u: 0 | 1, v: 0 | 1): void;
-    protected abstract recover(): [bigint, bigint];
+    protected abstract setup(): void;
+    protected abstract ladd(b: 0 | 1): void;
     multiply(scalar: bigint): Point;
+    protected recover(): [bigint, bigint];
 }
-export declare class BPSJ {
-    protected readonly P: Point;
-    protected T: bigint[];
-    constructor(P: Point);
-    multiply(scalar: bigint): Point;
+export declare class BPSJ8 extends AbstractBPSJ {
     protected setup(): void;
     protected ladd(b: 0 | 1): void;
-    protected recover(): [bigint, bigint];
 }
-export declare class BPSJ2 extends AbstractBPSJ {
-    protected setup(b: 0 | 1): void;
-    protected ladd(u: 0 | 1, v: 0 | 1): void;
-    protected recover(): [bigint, bigint];
-}
-export declare class BPSJ2Rand extends AbstractBPSJ {
-    private swap;
-    private readonly randomBit;
-    constructor(P: Point);
-    protected setup(b: 0 | 1): void;
-    protected ladd(u: 0 | 1, v: 0 | 1): void;
-    protected recover(): [bigint, bigint];
+export declare class BPSJ9 extends AbstractBPSJ {
+    protected setup(): void;
+    protected ladd(b: 0 | 1): void;
 }
 export declare class Point {
     readonly x: bigint;

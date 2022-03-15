@@ -46,15 +46,6 @@ run(async (windowSize) => {
   const msg = 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef';
   const signature = await secp.sign(msg, priv);
 
-  let n = 1n;
-  await mark('bpsjv2', 2500, () => {
-    new secp.BPSJ(secp.Point.BASE).multiply(n++);
-  });
-  n = 1n;
-  await mark('check', 2500, () => {
-    secp.Point.BASE.multiply(n++);
-  });
-
 //  for (let i = 1n; i < 50n; i++) {
 //    const bpsjP = secp.Point.BASE.bpsjV2Multiply(i).toHex(true);
 //    const checkP = secp.Point.BASE.multiply(i).toHex(true);
