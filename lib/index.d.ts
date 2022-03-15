@@ -14,22 +14,14 @@ declare type Hex = Uint8Array | string;
 declare type PrivKey = Hex | bigint | number;
 declare type PubKey = Hex | Point;
 declare type Sig = Hex | Signature;
-declare abstract class AbstractBPSJ {
-    protected readonly P: Point;
-    protected T: bigint[];
+export declare class BPSJ8 {
+    private readonly P;
+    private T;
     constructor(P: Point);
-    protected abstract setup(): void;
-    protected abstract ladd(b: 0 | 1): void;
     multiply(scalar: bigint): Point;
-    protected recover(): [bigint, bigint];
-}
-export declare class BPSJ8 extends AbstractBPSJ {
-    protected setup(): void;
-    protected ladd(b: 0 | 1): void;
-}
-export declare class BPSJ9 extends AbstractBPSJ {
-    protected setup(): void;
-    protected ladd(b: 0 | 1): void;
+    private setup;
+    private ladd;
+    private recover;
 }
 export declare class Point {
     readonly x: bigint;
