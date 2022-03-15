@@ -401,63 +401,66 @@ export class BPSJ8 {
   }
 
   private setup() {
-    const t5 = (this.P.y ** _2n) % CURVE.P;                 //  2,3
-    this.T[2] = (this.P.x * t5) % CURVE.P;                  //  1,4
-    this.T[0] = (this.T[2] * BigInt(12)) % CURVE.P;         //  5-7,9
-    this.T[2] = (this.P.x ** _2n) % CURVE.P;                //  1,8
-    this.T[4] = (this.T[2] * BigInt(3)) % CURVE.P;          // 10-11
-    this.T[2] = (this.T[4] + CURVE.a) % CURVE.P;            // 12
-    this.T[4] = (_2n * this.T[2]) % CURVE.P;                // 13
-    this.T[3] = (this.T[2] ** _2n) % CURVE.P;               // 14
-    this.T[2] = (t5 ** _2n) % CURVE.P;                      // 15
-    this.T[3] = mod(this.T[3] - this.T[0]);                 // 16
-    this.T[1] = (this.T[2] * BigInt(16)) % CURVE.P;         // 17-20
-    this.T[2] = _0n;                                        // 21
+    const { P: ord, a: alpha } = CURVE;
+    const t5 = (this.P.y ** _2n) % ord;                 //  2,3
+    this.T[2] = (this.P.x * t5) % ord;                  //  1,4
+    this.T[0] = (this.T[2] * BigInt(12)) % ord;         //  5-7,9
+    this.T[2] = (this.P.x ** _2n) % ord;                //  1,8
+    this.T[4] = (this.T[2] * BigInt(3)) % ord;          // 10-11
+    this.T[2] = (this.T[4] + alpha) % ord;              // 12
+    this.T[4] = (_2n * this.T[2]) % ord;                // 13
+    this.T[3] = (this.T[2] ** _2n) % ord;               // 14
+    this.T[2] = (t5 ** _2n) % ord;                      // 15
+    this.T[3] = mod(this.T[3] - this.T[0]);             // 16
+    this.T[1] = (this.T[2] * BigInt(16)) % ord;         // 17-20
+    this.T[2] = _0n;                                    // 21
   }
 
   // 8M + 4S + 9A
   private ladd(b: 0 | 1) {
-    this.T[3-b] = mod(this.T[3-b] - this.T[2+b]);           //  1
-    let t5 = (this.T[4] * this.T[2+b]) % CURVE.P;           //  2
-    t5 = (this.T[1] + t5) % CURVE.P;                        //  3
-    let t6 = (t5 * this.T[3-b]) % CURVE.P;                  //  4
-    const t7 = (t5 ** _2n) % CURVE.P;                       //  5
-    t5 = (this.T[4] * t6) % CURVE.P;                        //  6
-    t5 = (t7 + t5) % CURVE.P;                               //  7
-    this.T[4] = (this.T[1] * t6) % CURVE.P;                 //  8
-    this.T[1] = (t6 ** _2n) % CURVE.P;                      //  9
-    this.T[0] = (this.T[0] * this.T[1]) % CURVE.P;          // 10-11
-    this.T[1] = (this.T[4] * this.T[1]) % CURVE.P;          // 12-13
-    t6 = (this.T[3-b] ** _2n) % CURVE.P;                    // 14
-    this.T[4] = (this.T[2+b] * t6) % CURVE.P;               // 15
-    this.T[4] = mod(this.T[4] - t7 + this.T[4] - t5);       // 16-18
-    this.T[3-b] = (t7 * t5) % CURVE.P;                      // 19
-    t6 = this.T[4];                                         // 20
-    t6 = ((t6 & _1n) ? (t6 + CURVE.P) : t6) >> _1n;         // 20
-    t6 = (t6 ** _2n) % CURVE.P;                             // 21
-    this.T[2+b] = mod(t6 - this.T[0] - this.T[3-b]);        // 22-23
+    const { P: ord } = CURVE;
+    this.T[3-b] = mod(this.T[3-b] - this.T[2+b]);       //  1
+    let t5 = (this.T[4] * this.T[2+b]) % ord;           //  2
+    t5 = (this.T[1] + t5) % ord;                        //  3
+    let t6 = (t5 * this.T[3-b]) % ord;                  //  4
+    const t7 = (t5 ** _2n) % ord;                       //  5
+    t5 = (this.T[4] * t6) % ord;                        //  6
+    t5 = (t7 + t5) % ord;                               //  7
+    this.T[4] = (this.T[1] * t6) % ord;                 //  8
+    this.T[1] = (t6 ** _2n) % ord;                      //  9
+    this.T[0] = (this.T[0] * this.T[1]) % ord;          // 10-11
+    this.T[1] = (this.T[4] * this.T[1]) % ord;          // 12-13
+    t6 = (this.T[3-b] ** _2n) % ord;                    // 14
+    this.T[4] = (this.T[2+b] * t6) % ord;               // 15
+    this.T[4] = mod(this.T[4] - t7 + this.T[4] - t5);   // 16-18
+    this.T[3-b] = (t7 * t5) % ord;                      // 19
+    t6 = this.T[4];                                     // 20
+    t6 = ((t6 & _1n) ? (t6 + CURVE.P) : t6) >> _1n;     // 20
+    t6 = (t6 ** _2n) % ord;                             // 21
+    this.T[2+b] = mod(t6 - this.T[0] - this.T[3-b]);    // 22-23
   }
 
   private recover(): [bigint, bigint] {
+    const { P: ord } = CURVE;
     // x_1 = 4*(y_0*X_0)^2*X_1 / (9*(x_0*Y_0)^2) + x_0
     // y_1 = 4*(y_0*X_0)^3*M*X_1 / (27*(x_0*Y_0)^3) + y_0
-    this.T[3] = (this.P.y * this.T[0]) % CURVE.P;           //  1 y_0*X_0
-    let t5 = (this.T[3] ** _2n) % CURVE.P;                  //  2 (y_0*X_0)^2
-    t5 = (t5 * BigInt(4)) % CURVE.P;                        //  3-4 4*(y_0*X_0)^2
-    const t6 = (t5 * this.T[2]) % CURVE.P;                  //  5 4*(y_0*X_0)^2*X_1
-    this.T[0] = (t6 * this.T[4]) % CURVE.P;                 //  6 4*(y_0*X_0)^2*M*X_1
-    const t7 = (this.T[0] * this.T[3]) % CURVE.P;           //  7 4*(y_0*X_0)^3*M*X_1
-    this.T[0] = (this.P.x * this.T[4]) % CURVE.P;           //  8 x_0*Y_0
-    this.T[1] = (this.T[0] ** _2n) % CURVE.P;               //  9 (x_0*Y_0)^2
-    this.T[3] = (this.T[1] * this.T[0]) % CURVE.P;          // 10 (x_0*Y_0)^3
-    this.T[1] = (this.T[3] * BigInt(27)) % CURVE.P;         // 11-17 27*(x_0*Y_0)^3
-    this.T[4] = invert(this.T[1]);                          // 18 1/(27*(x_0*Y_0)^3)
-    this.T[1] = (this.T[4] * t7) % CURVE.P;                 // 19 almost y_1
-    this.T[1] = (this.T[1] + this.P.y) % CURVE.P;           // 20 y_1
-    this.T[3] = (this.T[4] * this.T[0]) % CURVE.P;          // 21 1/(27*(x_0*Y_0)^2)
-    t5 = (this.T[3] * BigInt(3)) % CURVE.P;                 // 22-23 1/(9*(x_0*Y_0)^2)
-    this.T[0] = (t5 * t6) % CURVE.P;                        // 24 almost x_1
-    this.T[0] = (this.T[0] + this.P.x) % CURVE.P;           // 25 x_1
+    this.T[3] = (this.P.y * this.T[0]) % ord;           //  1 y_0*X_0
+    let t5 = (this.T[3] ** _2n) % ord;                  //  2 (y_0*X_0)^2
+    t5 = (t5 * BigInt(4)) % ord;                        //  3-4 4*(y_0*X_0)^2
+    const t6 = (t5 * this.T[2]) % ord;                  //  5 4*(y_0*X_0)^2*X_1
+    this.T[0] = (t6 * this.T[4]) % ord;                 //  6 4*(y_0*X_0)^2*M*X_1
+    const t7 = (this.T[0] * this.T[3]) % ord;           //  7 4*(y_0*X_0)^3*M*X_1
+    this.T[0] = (this.P.x * this.T[1]) % ord;           //  8 x_0*Y_0
+    this.T[1] = (this.T[0] ** _2n) % ord;               //  9 (x_0*Y_0)^2
+    this.T[3] = (this.T[1] * this.T[0]) % ord;          // 10 (x_0*Y_0)^3
+    this.T[1] = (this.T[3] * BigInt(27)) % ord;         // 11-17 27*(x_0*Y_0)^3
+    this.T[4] = invert(this.T[1]);                      // 18 1/(27*(x_0*Y_0)^3)
+    this.T[1] = (this.T[4] * t7) % ord;                 // 19 almost y_1
+    this.T[1] = (this.T[1] + this.P.y) % ord;           // 20 y_1
+    this.T[3] = (this.T[4] * this.T[0]) % ord;          // 21 1/(27*(x_0*Y_0)^2)
+    t5 = (this.T[3] * BigInt(3)) % ord;                 // 22-23 1/(9*(x_0*Y_0)^2)
+    this.T[0] = (t5 * t6) % ord;                        // 24 almost x_1
+    this.T[0] = (this.T[0] + this.P.x) % ord;           // 25 x_1
     return [this.T[0], this.T[1]];
   }
 }
@@ -633,10 +636,6 @@ export class Point {
 
   multiply(scalar: number | bigint) {
     return JacobianPoint.fromAffine(this).multiply(scalar, this).toAffine();
-  }
-
-  multiplyUnsafe(scalar: number | bigint) {
-    return JacobianPoint.fromAffine(this).multiplyUnsafe(normalizeScalar(scalar)).toAffine();
   }
 
   /**

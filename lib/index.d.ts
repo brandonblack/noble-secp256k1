@@ -47,7 +47,6 @@ export declare class Point {
     add(other: Point): Point;
     subtract(other: Point): Point;
     multiply(scalar: number | bigint): Point;
-    multiplyUnsafe(scalar: number | bigint): Point;
     multiplyAndAddUnsafe(Q: Point, a: bigint, b: bigint): Point | undefined;
 }
 export declare class Signature {
