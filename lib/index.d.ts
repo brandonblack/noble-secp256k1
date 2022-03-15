@@ -14,6 +14,37 @@ declare type Hex = Uint8Array | string;
 declare type PrivKey = Hex | bigint | number;
 declare type PubKey = Hex | Point;
 declare type Sig = Hex | Signature;
+declare abstract class AbstractBPSJ {
+    protected readonly P: Point;
+    protected T: bigint[];
+    constructor(P: Point);
+    protected abstract setup(b: 0 | 1): void;
+    protected abstract ladd(u: 0 | 1, v: 0 | 1): void;
+    protected abstract recover(): [bigint, bigint];
+    multiply(scalar: bigint): Point;
+}
+export declare class BPSJ {
+    protected readonly P: Point;
+    protected T: bigint[];
+    constructor(P: Point);
+    multiply(scalar: bigint): Point;
+    protected setup(): void;
+    protected ladd(b: 0 | 1): void;
+    protected recover(): [bigint, bigint];
+}
+export declare class BPSJ2 extends AbstractBPSJ {
+    protected setup(b: 0 | 1): void;
+    protected ladd(u: 0 | 1, v: 0 | 1): void;
+    protected recover(): [bigint, bigint];
+}
+export declare class BPSJ2Rand extends AbstractBPSJ {
+    private swap;
+    private readonly randomBit;
+    constructor(P: Point);
+    protected setup(b: 0 | 1): void;
+    protected ladd(u: 0 | 1, v: 0 | 1): void;
+    protected recover(): [bigint, bigint];
+}
 export declare class Point {
     readonly x: bigint;
     readonly y: bigint;
@@ -38,6 +69,7 @@ export declare class Point {
     add(other: Point): Point;
     subtract(other: Point): Point;
     multiply(scalar: number | bigint): Point;
+    multiplyUnsafe(scalar: number | bigint): Point;
     multiplyAndAddUnsafe(Q: Point, a: bigint, b: bigint): Point | undefined;
 }
 export declare class Signature {

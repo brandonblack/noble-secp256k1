@@ -33,8 +33,10 @@ run(async (windowSize) => {
   // await mark('getPublicKey 256 bit', samples * 10, () => {
   //   secp.getPublicKey('7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffcfcb');
   // });
+  const privateKeys = new Array(2500).fill(0).map(() => secp.utils.randomPrivateKey());
+  let i = 0;
   await mark('getPublicKey(utils.randomPrivateKey())', 2500, () => {
-    secp.getPublicKey(secp.utils.randomPrivateKey());
+    secp.getPublicKey(privateKeys[i++]);
   });
 
   const priv = 'f6fc7fd5acaf8603709160d203253d5cd17daa307483877ad811ec8411df56d2';
@@ -44,6 +46,25 @@ run(async (windowSize) => {
   const msg = 'deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef';
   const signature = await secp.sign(msg, priv);
 
+  let n = 1n;
+  await mark('bpsjv2', 2500, () => {
+    new secp.BPSJ(secp.Point.BASE).multiply(n++);
+  });
+  n = 1n;
+  await mark('check', 2500, () => {
+    secp.Point.BASE.multiply(n++);
+  });
+
+//  for (let i = 1n; i < 50n; i++) {
+//    const bpsjP = secp.Point.BASE.bpsjV2Multiply(i).toHex(true);
+//    const checkP = secp.Point.BASE.multiply(i).toHex(true);
+//    if (bpsjP === checkP) {
+//      console.log({i, bpsjP, MATCH: true});
+//    } else {
+//      console.log({i, bpsjP, checkP});
+//    }
+//  }
+
   await mark('sign', 2500, async () => {
     await secp.sign(msg, priv);
   });
@@ -52,6 +73,12 @@ run(async (windowSize) => {
 
   await mark('verify', 500, () => {
     secp.verify(signature, msg, pub);
+  });
+
+  const tinysecp = require('tiny-secp256k1-wasm');
+  const [s, m, p] = [secp.Signature.fromDER(signature).toCompactRawBytes(), Buffer.from(msg, 'hex'), Buffer.from(pub, 'hex')];
+  await mark('tiny verify', 500, () => {
+    tinysecp.verify(m, p, s);
   });
 
   const [rsig, reco] = await secp.sign(msg, priv, { canonical: true, recovered: true });
@@ -68,7 +95,7 @@ run(async (windowSize) => {
     secp.getSharedSecret(priv, pub2Pre);
   });
 
-  let i = 0;
+  i = 0;
   await mark('Point.fromHex (decompression)', 6000, () => {
     const p = points[i++ % points.length];
     secp.Point.fromHex(p);
@@ -77,9 +104,21 @@ run(async (windowSize) => {
   const smsg = '0000000000000000000000000000000000000000000000000000000000000000';
   const spri = '0000000000000000000000000000000000000000000000000000000000000003';
   const spub = secp.Point.fromPrivateKey(spri);
-  const ssig = await secp.schnorr.sign(smsg, spri);
-  await mark('schnorr.sign', 350, () => secp.schnorr.sign(smsg, spri));
+  const ssig = await secp.schnorr.sign(smsg, spri, smsg);
+  await mark('schnorr.sign', 350, () => secp.schnorr.sign(smsg, spri, smsg));
   await mark('schnorr.verify', 500, () => secp.schnorr.verify(ssig, smsg, spub));
+  await mark('tiny schnorr.verify', 500, () => tinysecp.verifySchnorr(Buffer.from(smsg, 'hex'), spub.toRawX(), ssig));
+
+  const tests = new Array(500).fill(0).map(() => secp.utils.randomBytes());
+  await secp.utils.taggedHash('Tagtagtag', Uint8Array.of(0));
+  i = 0;
+  let j = 0;
+  const r = []
+  await mark('taggedHash', 10000, async () => {
+    r.push(await secp.utils.taggedHash('Tagtagtag', tests[i], tests[j]));
+    i = (i + 17) % tests.length;
+    j = (j + 29) % tests.length;
+  });
 
   console.log();
   logMem();
