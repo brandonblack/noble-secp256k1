@@ -27,7 +27,7 @@ run(async (windowSize) => {
 
   const tweaks = privateKeys.map((pk) => BigInt(`0x${secp.utils.bytesToHex(pk)}`));
 
-  const total = 1000;
+  const total = 100;
   let nRight = 0;
   for (i = 0; i < total; i++) {
     const bpsjP = new secp.BPSJ8(secp.Point.BASE).multiply(tweaks[i]).toHex(true);
@@ -38,23 +38,20 @@ run(async (windowSize) => {
   }
   console.log({nRight, total, percent: nRight/total*100});
 
-  i = 0;
-  await mark('BPSJ8', 1000, () => {
-    new secp.BPSJ8(secp.Point.BASE).multiply(tweaks[i++]);
-  });
-  i = 0;
-  await mark('window', 1000, () => {
-    secp.Point.BASE.multiply(tweaks[i++]);
-  });
-  i = 0;
-  await mark('multiplyUnsafe', 1000, () => {
-    secp.Point.BASE.multiplyUnsafe(tweaks[i++]);
-  });
-  const P = secp.Point.fromHex(secp.getPublicKey(privateKeys[0]));
-  i = 0;
-  await mark('uncached', 1000, () => {
-    P.multiply(tweaks[i++]);
-  });
+  for (let j = 0; j < 2; j++) {
+    i = j * 1000;
+    await mark('BPSJ8', 1000, () => {
+      new secp.BPSJ8(secp.Point.BASE).multiply(tweaks[i++]);
+    });
+    i = j * 1000;
+    await mark('window', 1000, () => {
+      secp.Point.BASE.multiply(tweaks[i++]);
+    });
+    i = j * 1000;
+    await mark('multiplyUnsafe', 1000, () => {
+      secp.Point.BASE.multiplyUnsafe(tweaks[i++]);
+    });
+  }
 
   console.log();
   logMem();
