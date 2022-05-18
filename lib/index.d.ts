@@ -59,6 +59,7 @@ export declare class Signature {
 }
 declare function bytesToHex(uint8a: Uint8Array): string;
 declare function mod(a: bigint, b?: bigint): bigint;
+declare function invert(number: bigint, modulo?: bigint): bigint;
 declare type U8A = Uint8Array;
 export declare function getPublicKey(privateKey: PrivKey, isCompressed?: boolean): Uint8Array;
 export declare function recoverPublicKey(msgHash: Hex, signature: Sig, recovery: number, isCompressed?: boolean): Uint8Array;
@@ -120,6 +121,7 @@ export declare const utils: {
     randomPrivateKey: () => Uint8Array;
     bytesToHex: typeof bytesToHex;
     mod: typeof mod;
+    invert: typeof invert;
     sha256: (...messages: Uint8Array[]) => Promise<Uint8Array>;
     hmacSha256: (key: Uint8Array, ...messages: Uint8Array[]) => Promise<Uint8Array>;
     sha256Sync: Sha256FnSync;
